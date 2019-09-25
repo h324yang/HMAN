@@ -3,7 +3,22 @@
 
 The code for the research paper [Aligning Cross-lingual Entities with Multi-Aspect Information](https://cs.uwaterloo.ca/~jimmylin/publications/YangHW_etal_EMNLP2019.pdf) @EMNLP 2019. 
 
+*Our code is built on top of [GCN-Align](https://github.com/1049451037/GCN-Align).
+
+## Run Graph-based Embeddings (HMAN/MAN)
+
+#### HMAN
+```
+python run.py --lang zh_en --gpu 0 --hybrid 1
+```
+#### MAN
+```
+python run.py --lang zh_en --gpu 0 --hybrid 0
+```
+
+## Run PairwiseBERT
 ### ... Coming Soon ...
+
 
 
 ## Citation
