@@ -44,7 +44,7 @@ class Config:
     act_func = tf.nn.relu
     gamma = 3.0  # margin based loss
     k = 25  # number of negative samples for each positive one
-    ckpt = "ckpt"
+    ckpt = "graph_ckpt"
 
 if __name__ == '__main__':
     e = len(set(loadfile(Config.e1, 1)) | set(loadfile(Config.e2, 1)))
