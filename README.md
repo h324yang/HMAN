@@ -27,7 +27,11 @@ bash eval_bert.sh 0 1
 ```
 
 ## Integration
-### Coming soon...
+```
+python weighted_concat.py --desc relogic/saves/pair_matching/1/pairwise_dump.json \ 
+                          --graph graph_ckpt/zh_en_graph_embd.pkl \
+                          --ill data/zh_en/test
+```
 
 
 ## Citation
