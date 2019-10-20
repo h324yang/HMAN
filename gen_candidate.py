@@ -7,10 +7,6 @@ import os
 import json
 
 
-p = argparse.ArgumentParser()
-p.add_argument("--ckpt")
-args = p.parse_args()
-
 
 def load_comment(lang):
     res = {}
@@ -96,12 +92,16 @@ def write_gcn_dataset(lang, vec, train, dev, test, sent_dict, out_dir, topk=200)
     write_test_sent(out_dir+"/"+lang+"/test.json", test)
 
 if __name__ == "__main__":
-    for lang in ["zh_en", "ja_en", "fr_en"]:
-        comm_dict = load_comment(lang)
-        vec = pickle.load(open(args.ckpt+"/"+lang+"_graph_embd.pkl", "rb"))
-        train = np.array(loadfile("data/"+lang+"/train", 2))
-        dev = np.array(loadfile("data/"+lang+"/dev", 2))
-        test = np.array(loadfile("data/"+lang+"/ref_ent_ids", 2)) # to get all desc embeddings
-        write_gcn_dataset(lang, vec, train, dev, test, comm_dict, "candidate", topk=200)
+    p = argparse.ArgumentParser()
+    p.add_argument("--ckpt")
+    p.add_argument("--lang") # {zh_en, ja_en, fr_en}
+    args = p.parse_args()
+
+    comm_dict = load_comment(args.lang)
+    vec = pickle.load(open(args.ckpt+"/"+args.lang+"_graph_embd.pkl", "rb"))
+    train = np.array(loadfile("data/"+args.lang+"/train", 2))
+    dev = np.array(loadfile("data/"+args.lang+"/dev", 2))
+    test = np.array(loadfile("data/"+args.lang+"/ref_ent_ids", 2)) # to get all desc embeddings
+    write_gcn_dataset(args.lang, vec, train, dev, test, comm_dict, "candidate", topk=200)
 
 

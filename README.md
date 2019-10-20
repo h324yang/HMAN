@@ -6,7 +6,7 @@ The code for the research paper [Aligning Cross-lingual Entities with Multi-Aspe
 *Our code is built on top of [GCN-Align](https://github.com/1049451037/GCN-Align).
 
 ## Quick Demo
-We store the embeddings for demo in the directory `demo_embd`, and we can evaluate `ZH-EN` as follows:
+We stored the embeddings for demo in the directory `demo_embd`, and we can evaluate `ZH-EN` as follows:
 ```
 python weighted_concat.py -d demo_embd/pairwise_dump.json -g demo_embd/zh_en_graph_embd.pkl -i data/zh_en/test
 ```
@@ -16,28 +16,28 @@ python weighted_concat.py -d demo_embd/pairwise_dump.json -g demo_embd/zh_en_gra
 
 #### HMAN
 ```
-python run.py --lang zh_en --gpu 0 --hybrid 1
+bash graph.sh 0 1
 ```
 #### MAN
 ```
-python run.py --lang zh_en --gpu 0 --hybrid 0
+bash graph.sh 0 0
 ```
 
 ## Run PairwiseBERT
 #### Training
 ```
-bash train_bert.sh 0 1
+bash train_bert.sh 0 zh_en
 ```
 (Note that you need to stop the training manually.)
 
 #### Evaluation
 ```
-bash eval_bert.sh 0 1
+bash eval_bert.sh 0 zh_en
 ```
 
 ## Integration
 ```
-python weighted_concat.py --desc relogic/saves/pair_matching/1/pairwise_dump.json --graph graph_ckpt/zh_en_graph_embd.pkl --ill data/zh_en/test
+python weighted_concat.py --desc relogic/saves/pair_matching/zh_en/pairwise_dump.json --graph graph_ckpt/zh_en_graph_embd.pkl --ill data/zh_en/test
 ```
 
 
