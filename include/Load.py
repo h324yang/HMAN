@@ -1,5 +1,7 @@
 import numpy as np
 from collections import Counter
+import json
+
 
 # load a file and return a list of tuple containing $num integers in each line
 def loadfile(fn, num=1):
@@ -55,7 +57,6 @@ def load_attr(fns, e, ent2id, topA=1000):
         return attr
 
 
-
 def load_relation(e, KG, topR=1000):
         rel_mat = np.zeros((e, topR), dtype=np.float32)
         rels = np.array(KG)[:,1]
@@ -69,5 +70,15 @@ def load_relation(e, KG, topR=1000):
                         rel_mat[h][rel_index_dict[r]] += 1.
                         rel_mat[o][rel_index_dict[r]] += 1.
         return np.array(rel_mat)
+
+
+def load_json_embd(path):
+        embd_dict = {}
+        with open(path) as f:
+                for line in f:
+                        example = json.loads(line.strip())
+                        vec = np.array([float(e) for e in example['feature'].split()])
+                        embd_dict[int(example['guid'])] = vec
+        return embd_dict
 
 
