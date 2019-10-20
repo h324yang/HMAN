@@ -21,6 +21,8 @@ python run.py --lang zh_en --gpu 0 --hybrid 0
 ```
 bash train_bert.sh 0 1
 ```
+Note that you need to stop the training manually.
+
 #### Evaluation
 ```
 bash eval_bert.sh 0 1
