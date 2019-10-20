@@ -17,8 +17,17 @@ python run.py --lang zh_en --gpu 0 --hybrid 0
 ```
 
 ## Run PairwiseBERT
-### ... Coming Soon ...
+#### Training
+```
+bash train_bert.sh 0 1
+```
+#### Evaluation
+```
+bash eval_bert.sh 0 1
+```
 
+## Integration
+### Coming soon...
 
 
 ## Citation
