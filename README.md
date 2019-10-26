@@ -46,7 +46,7 @@ python weighted_concat.py --desc relogic/saves/pair_matching/zh_en/pairwise_dump
 
 ## Citation
 ```
-@article{yang2019align,
+@article{yang2019aligning,
   title={Aligning Cross-Lingual Entities with Multi-Aspect Information},
   author={Yang, Hsiu-Wei and Zou, Yanyan and Shi, Peng and Lu, Wei and Lin, Jimmy and Sun, Xu},
   booktitle={Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing},
