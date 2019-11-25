@@ -25,7 +25,16 @@ bash graph.sh 0 0
 
 ## Run PairwiseBERT
 We use the package `relogic` to derive BERT-based embeddings.
-Please install `relogic` before you run the followings.
+Please install `relogic` first:
+```
+git submodule init
+git submodule update
+```
+Also, becasue`relogic` evolves fast, we suggest that you change to the commit `d1b5046`:
+```
+cd relogic
+git checkout d1b5046
+```
 Note that the argument `--local_rank` in `relogic` indicates your gpu id.
 #### Training
 ```
