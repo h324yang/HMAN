@@ -23,24 +23,25 @@ tf.set_random_seed(seed)
 
 class Config:
     language = LANG # zh_en | ja_en | fr_en
-    e1 = 'data/' + language + '/ent_ids_1'
-    e2 = 'data/' + language + '/ent_ids_2'
-    r1 = 'data/' + language + '/rel_ids_1'
-    r2 = 'data/' + language + '/rel_ids_2'
-    a1 = 'data/' + language + '/training_attrs_1'
-    a2 = 'data/' + language + '/training_attrs_2'
-    ill = 'data/' + language + '/ref_ent_ids'
-    tr = 'data/' + language + '/train'
-    te = 'data/' + language + '/test'
-    dev = 'data/' + language + '/dev'
-    kg1 = 'data/' + language + '/triples_1'
-    kg2 = 'data/' + language + '/triples_2'
+    data_dir = '../massive-align/WikidataLow/data/'
+    e1 = data_dir + language + '/ent_ids_1'
+    e2 = data_dir + language + '/ent_ids_2'
+    r1 = data_dir + language + '/rel_ids_1'
+    r2 = data_dir + language + '/rel_ids_2'
+    a1 = data_dir + language + '/training_attrs_1'
+    a2 = data_dir + language + '/training_attrs_2'
+    ill = data_dir + language + '/ref_ent_ids'
+    tr = data_dir + language + '/train'
+    te = data_dir + language + '/test'
+    dev = data_dir + language + '/dev'
+    kg1 = data_dir + language + '/triples_1'
+    kg2 = data_dir + language + '/triples_2'
     epochs = 50000 if HYBRID else 2000
-    se_dim = 200
-    ae_dim = 100
+    se_dim = 100
+    ae_dim = 50
     attr_num = 1000
     rel_dim = 100
-    rel_num = 1000
+    rel_num = 50
     act_func = tf.nn.relu
     gamma = 3.0  # margin based loss
     k = 25  # number of negative samples for each positive one
@@ -48,20 +49,29 @@ class Config:
 
 if __name__ == '__main__':
     e = len(set(loadfile(Config.e1, 1)) | set(loadfile(Config.e2, 1)))
-    print(e)
-    ILL = loadfile(Config.ill, 2)
+    post_map = {-1: e}
+    ILL = loadfile(Config.ill, 2, post_map)
     illL = len(ILL)
-    train = loadfile(Config.tr, 2)
-    dev = loadfile(Config.dev, 2)
+    train = loadfile(Config.tr, 2, post_map)
+    dev = loadfile(Config.dev, 2, post_map)
     np.random.shuffle(train)
     np.random.shuffle(dev)
     train = np.array(train + dev)
-    test = loadfile(Config.te, 2)
+    test = loadfile(Config.te, 2, post_map)
     KG1 = loadfile(Config.kg1, 3)
     KG2 = loadfile(Config.kg2, 3)
     ent2id = get_ent2id([Config.e1, Config.e2]) # attr
     attr = load_attr([Config.a1, Config.a2], e, ent2id, Config.attr_num) # attr
     rel = load_relation(e, KG1+KG2, Config.rel_num)
+    
+    print(f"num of total refs: {len(ILL)}")
+    print(f"num of training refs: {len(train) - len(dev)}")
+    print(f"num of dev refs: {len(dev)}")
+    print(f"num of test refs: {len(test)}")
+    print(f"num of entities: {e}")
+    print(f"num of attributes: {len(attr)}")
+    print(f"num of relations: {len(rel)}")
+    
 
     if HYBRID:
         print("running HMAN...")

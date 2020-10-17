@@ -9,9 +9,9 @@ import pickle
 
 def parse():
     p = argparse.ArgumentParser()
-    p.add_argument("-d", "--desc", help="Paht to PairwiseBERT embedding file. (JSON)")
-    p.add_argument("-g", "--graph", help="Paht to graph embedding. (PICKLE)")
-    p.add_argument("-i", "--ill", help="Paht to ILLs, i.e., ground truth. (TXT)")
+    p.add_argument("-d", "--desc", help="Path to PairwiseBERT embedding file. (JSON)")
+    p.add_argument("-g", "--graph", help="Path to graph embedding. (PICKLE)")
+    p.add_argument("-i", "--ill", help="Path to ILLs, i.e., ground truth. (TXT)")
     args = p.parse_args()
     return args
 
