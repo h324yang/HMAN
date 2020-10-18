@@ -75,7 +75,7 @@ def get_ae_input_layer(attr):
 
 
 # get loss node
-def get_loss(outlayer, ILL, gamma, k):
+def get_loss(outlayer, ILL, gamma, k, oneway=True):
     print('getting loss...')
     left = ILL[:, 0]
     right = ILL[:, 1]
@@ -98,7 +98,10 @@ def get_loss(outlayer, ILL, gamma, k):
     B = tf.reduce_sum(tf.abs(neg_l_x - neg_r_x), 1)
     C = - tf.reshape(B, [t, k])
     L2 = tf.nn.relu(tf.add(C, tf.reshape(D, [t, 1])))
-    return (tf.reduce_sum(L1) + tf.reduce_sum(L2)) / (2.0 * k * t)
+    if oneway:
+        return tf.reduce_sum(L1) / (k * t)
+    else:
+        return (tf.reduce_sum(L1) + tf.reduce_sum(L2)) / (2.0 * k * t)
 
 
 def highway(input_layer, units, act_func):
@@ -107,7 +110,7 @@ def highway(input_layer, units, act_func):
     return H*T + input_layer*(1-T)
 
 
-def build_HMAN(se_dimension, act_func, gamma, k, e, ILL, KG, attr, ae_dimension, rel, rel_dimension):
+def build_HMAN(se_dimension, act_func, gamma, k, e, ILL, KG, attr, ae_dimension, rel, rel_dimension, wikidata=True):
     tf.reset_default_graph()
     M = get_sparse_adj(e, KG)
     # attr
@@ -121,15 +124,16 @@ def build_HMAN(se_dimension, act_func, gamma, k, e, ILL, KG, attr, ae_dimension,
     # se
     se_layer = get_se_input_layer(e, se_dimension)
     se_hidden = add_diag_layer(se_layer, se_dimension, M, act_func, dropout=0.0)
+    # se_hidden = add_diag_layer(se_hidden, se_dimension, M, act_func, dropout=0.0)
     se_output = add_diag_layer(se_hidden, se_dimension, M, None, dropout=0.0)
     # fusion
     output_layer = tf.concat([se_output, ae_output, rel_output], 1)
     output_layer = tf.nn.l2_normalize(output_layer, 1)
-    loss = get_loss(output_layer, ILL, gamma, k)
+    loss = get_loss(output_layer, ILL, gamma, k, wikidata)
     return output_layer, loss
 
 
-def build_MAN(se_dimension, act_func, gamma, k, e, ILL, KG, attr, ae_dimension, rel, rel_dimension):
+def build_MAN(se_dimension, act_func, gamma, k, e, ILL, KG, attr, ae_dimension, rel, rel_dimension, wikidata=True):
     tf.reset_default_graph()
     M = get_sparse_adj(e, KG)
     # attr
@@ -147,11 +151,11 @@ def build_MAN(se_dimension, act_func, gamma, k, e, ILL, KG, attr, ae_dimension, 
     # fusion
     output_layer = tf.concat([se_output, ae_output, rel_output], 1)
     output_layer = tf.nn.l2_normalize(output_layer, 1)
-    loss = get_loss(output_layer, ILL, gamma, k)
+    loss = get_loss(output_layer, ILL, gamma, k, wikidata)
     return output_layer, loss
 
 
-def training(output_layer, loss, learning_rate, epochs, ILL, e, k, valid_pair=None):
+def training(output_layer, loss, learning_rate, epochs, ILL, e, k, valid_pair=None, wikidata=False):
     train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)  # optimizer can be changed
     print('initializing...')
     init = tf.global_variables_initializer()
@@ -159,7 +163,7 @@ def training(output_layer, loss, learning_rate, epochs, ILL, e, k, valid_pair=No
     config.gpu_options.allow_growth=True
     sess = tf.Session(config=config)
     sess.run(init)
-    print('running...')
+    print('start training...')
     J = []
     t = len(ILL)
     ILL = np.array(ILL)
@@ -191,13 +195,17 @@ def training(output_layer, loss, learning_rate, epochs, ILL, e, k, valid_pair=No
             print('%d/%d' % (i + 1, epochs), 'epochs...', ">> loss:", th, f"(time: {delta:.2f})")
             J.append(th)
 
-        if valid_pair and (i + 1) % 5000 == 0:
-            th = sess.run(loss, feed_dict={"neg_left:0": neg_left,
-                "neg_right:0": neg_right,
-                "neg2_left:0": neg2_left,
-                "neg2_right:0": neg2_right})
+        if valid_pair and (i + 1) % 1000 == 0:
             outvec = sess.run(output_layer)
             print("Iter@%d"%(i+1))
+            if wikidata:
+                vec_dict = {}
+                valid_pair = [(str(head), str(tail)) for head, tail in valid_pair]
+                for head, tail in valid_pair:
+                    vec_dict[head] = outvec[int(head), :]
+                    vec_dict[tail] = outvec[int(tail), :]
+                outvec = vec_dict
+                
             get_hits(outvec, valid_pair)
 
     outvec = sess.run(output_layer)
