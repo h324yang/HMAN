@@ -2,6 +2,7 @@ import math
 from .Init import *
 from .Test import get_hits
 from scipy import sparse as sp
+import time
 
 def get_adj(e, KG):
     row = []
@@ -166,6 +167,8 @@ def training(output_layer, loss, learning_rate, epochs, ILL, e, k, valid_pair=No
     neg_left = L.reshape((t * k,))
     L = np.ones((t, k)) * (ILL[:, 1].reshape((t, 1)))
     neg2_right = L.reshape((t * k,))
+
+    time_a = time.time()
     for i in range(epochs):
         if i % 10 == 0:
             neg2_left = np.random.choice(e, t * k)
@@ -177,12 +180,16 @@ def training(output_layer, loss, learning_rate, epochs, ILL, e, k, valid_pair=No
             "neg2_right:0": neg2_right})
 
         if (i + 1) % 50 == 0:
+
             th = sess.run(loss, feed_dict={"neg_left:0": neg_left,
                 "neg_right:0": neg_right,
                 "neg2_left:0": neg2_left,
                 "neg2_right:0": neg2_right})
+            time_b = time.time()
+            delta = time_b - time_a
+            time_a = time_b
+            print('%d/%d' % (i + 1, epochs), 'epochs...', ">> loss:", th, f"(time: {delta:.2f})")
             J.append(th)
-            print('%d/%d' % (i + 1, epochs), 'epochs...', ">> loss:", th)
 
         if valid_pair and (i + 1) % 5000 == 0:
             th = sess.run(loss, feed_dict={"neg_left:0": neg_left,
