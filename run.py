@@ -48,36 +48,49 @@ class Config:
     gamma = 3.0  # margin based loss
     k = 25  # number of negative samples for each positive one
     ckpt = "../scratch/graph_ckpt"
+    global_nil = True
+    enable_nil = True
 
 if __name__ == '__main__':
     e1 = set(loadfile(Config.e1, 1))
     e2 = set(loadfile(Config.e2, 1))
-    e = len(e1 | e2)
+    num_ents = len(e1 | e2)
+    e = num_ents
     
-    post_map = None
-    if Config.wikidata:
-        post_map = {-1: e}
+    if Config.enable_nil:
+        # reindex nil nodes
+        postporc = lambda tup: tuple([num_ents if i == -1 else i for i in tup])
         e += 1
-        
-    ILL = loadfile(Config.ill, 2, post_map)
-    illL = len(ILL)
-    train = loadfile(Config.tr, 2, post_map)
+    else:
+        # remove nil nodes
+        postporc = lambda tup: None if -1 in tup else tup
+
+    ILL = loadfile(Config.ill, 2, postporc)
+    train = loadfile(Config.tr, 2, postporc)
     np.random.shuffle(train)
     
     if Config.dev:
-        dev = loadfile(Config.dev, 2, post_map)
+        dev = loadfile(Config.dev, 2, postporc)
         np.random.shuffle(dev)
         train = np.array(train + dev)
     else:
         train = np.array(train)
+    
+    if Config.te:
+        # -1, the original id of nil, is used while test
+        # so if nil is enabled, do nothing to nil entities 
+        te_postproc = None if Config.enable_nil else postporc
+        test = loadfile(Config.te, 2, te_postproc)
+    else: 
+        test = False
         
-    test = loadfile(Config.te, 2) if Config.te else False
     KG1 = loadfile(Config.kg1, 3)
     KG2 = loadfile(Config.kg2, 3)
     ent2id = get_ent2id([Config.e1, Config.e2]) # attr
     attr = load_attr([Config.a1, Config.a2], e, ent2id, Config.attr_num) # attr
     
-    if Config.wikidata:
+    if Config.enable_nil and Config.global_nil:
+        # nil connects to all entities and has all attributes
         KG2 += [(e-1, 0, int(ent[0])) for ent in e2]
         attr[-1] = np.ones(attr.shape[1])
     
@@ -85,22 +98,22 @@ if __name__ == '__main__':
 
     print(f"num of total refs: {len(ILL)}")
 
-
     if HYBRID:
         print("running HMAN...")
         output_layer, loss = build_HMAN(
             Config.se_dim, Config.act_func, Config.gamma, Config.k,
             e, train, KG1 + KG2, attr, Config.ae_dim, rel, Config.rel_dim,
-            Config.wikidata
+            Config.wikidata # one-way loss if it's wikidata
         )
     else:
         print("running MAN...")
         output_layer, loss = build_MAN(
             Config.se_dim, Config.act_func, Config.gamma, Config.k,
             e, train, KG1 + KG2, attr, Config.ae_dim, rel, Config.rel_dim,
-            Config.wikidata
+            Config.wikidata # one-way loss if it's wikidata
         )
-
+    
+    # dict output is used if it's wikidata, else 2d-array
     graph_embd, J = training(
         output_layer, loss, 1.0, Config.epochs, train, e, Config.k, test, Config.wikidata
     )

@@ -27,6 +27,10 @@ def get_hits(vecs, test_pairs, top_k=(1, 10, 50)):
         (hit_k_linked, total_linked, "Linked"), 
         (hit_k_nil, total_nil, "NIL"), 
     ]:
+        if not total:
+            print(f"No result for {category}...")
+            continue
+            
         for i in range(len(hit_k)):
             res = hit_k[i]/total*100
             print(f"Result (#{category}: {total}) | Hits@{top_k[i]}: {res:.2f}%")

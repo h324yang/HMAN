@@ -124,7 +124,6 @@ def build_HMAN(se_dimension, act_func, gamma, k, e, ILL, KG, attr, ae_dimension,
     # se
     se_layer = get_se_input_layer(e, se_dimension)
     se_hidden = add_diag_layer(se_layer, se_dimension, M, act_func, dropout=0.0)
-    # se_hidden = add_diag_layer(se_hidden, se_dimension, M, act_func, dropout=0.0)
     se_output = add_diag_layer(se_hidden, se_dimension, M, None, dropout=0.0)
     # fusion
     output_layer = tf.concat([se_output, ae_output, rel_output], 1)
@@ -147,7 +146,6 @@ def build_MAN(se_dimension, act_func, gamma, k, e, ILL, KG, attr, ae_dimension, 
     # se
     se_layer = get_se_input_layer(e, se_dimension)
     se_hidden = add_diag_layer(se_layer, se_dimension, M, act_func, dropout=0.0)
-    se_hidden = add_diag_layer(se_hidden, se_dimension, M, act_func, dropout=0.0)
     se_output = add_diag_layer(se_hidden, se_dimension, M, None, dropout=0.0)
     # fusion
     output_layer = tf.concat([se_output, ae_output, rel_output], 1)

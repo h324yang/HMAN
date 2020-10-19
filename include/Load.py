@@ -4,7 +4,7 @@ import json
 
 
 # load a file and return a list of tuple containing $num integers in each line
-def loadfile(fn, num=1, post_map={}):
+def loadfile(fn, num=1, postproc=None):
         print('loading a file...' + fn)
         ret = []
         with open(fn, encoding='utf-8') as f:
@@ -13,10 +13,12 @@ def loadfile(fn, num=1, post_map={}):
                         x = []
                         for i in range(num):
                                 elem = int(th[i])
-                                if elem in post_map:
-                                    elem = post_map[elem]
                                 x.append(elem)
                         ret.append(tuple(x))
+        
+        if postproc:
+            ret = [postproc(tup) for tup in ret if postproc(tup)]
+        
         return ret
 
 
