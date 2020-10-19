@@ -20,6 +20,7 @@ os.environ["CUDA_VISIBLE_DEVICES"]=GPU
 seed = 12306
 np.random.seed(seed)
 tf.set_random_seed(seed)
+tf.compat.v1.set_random_seed(seed)
 
 class Config:
     language = LANG # zh_en | ja_en | fr_en
@@ -73,13 +74,13 @@ if __name__ == '__main__':
     test = loadfile(Config.te, 2) if Config.te else False
     KG1 = loadfile(Config.kg1, 3)
     KG2 = loadfile(Config.kg2, 3)
-    
-    if Config.wikidata:
-        # KG1 += [(e-1, 0, i) for i in range(e-1)]
-        KG2 += [(e-1, 0, int(ent[0])) for ent in e2]
-    
     ent2id = get_ent2id([Config.e1, Config.e2]) # attr
     attr = load_attr([Config.a1, Config.a2], e, ent2id, Config.attr_num) # attr
+    
+    if Config.wikidata:
+        KG2 += [(e-1, 0, int(ent[0])) for ent in e2]
+        attr[-1] = np.ones(attr.shape[1])
+    
     rel = load_relation(e, KG1+KG2, Config.rel_num)
 
     print(f"num of total refs: {len(ILL)}")
@@ -101,7 +102,7 @@ if __name__ == '__main__':
         )
 
     graph_embd, J = training(
-        output_layer, loss, 25, Config.epochs, train, e, Config.k, test, Config.wikidata
+        output_layer, loss, 1.0, Config.epochs, train, e, Config.k, test, Config.wikidata
     )
     
     with open(Config.ckpt+"/%s_graph_embd.pkl"%Config.language, "wb") as f:
